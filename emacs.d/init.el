@@ -3,9 +3,6 @@
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
 
-(global-display-line-numbers-mode 1)
-(setq display-line-numbers 'relative)
-
 (setq
  inhibit-startup-screen t
  inhibit-startup-message t
@@ -14,6 +11,12 @@
  resize-mini-windows 'grow-only
  max-mini-window-height 0.15
  make-backup-files nil)
+
+(setq-default
+ indent-tabs-mode nil)
+
+(global-display-line-numbers-mode 1)
+(setq display-line-numbers 'relative)
 
 ;; Why is ~/.emacs.d/site-lisp not added to the default load-path
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
@@ -46,18 +49,10 @@
       show-paren-when-point-in-periphery t)
 
 ;; Whitespaces
-(setq whitespace-line-column nil
-      whitespace-style
-      '(face indentation tabs tab-mark spaces space-mark newline newline-mark
-	     trailing lines-tail)
-      whitespace-display-mappings
-      '((tab-mark ?\t [?› ?\t])
-	(newline-mark ?\n [?¬ ?\n])
-	(space-mark ?\  [?·] [?.])))
+(use-package highlight-chars)
 
 ;; Hydra
-(use-package hydra
-  :load-path "site-lisp/hydra")
+(use-package hydra)
 
 ;; Projectile
 (use-package projectile
@@ -75,41 +70,39 @@
 ;; Company
 (use-package company
   :init (setq company-idle-delay 0.25
-	      company-minimum-prefix-length 2
-	      company-tooltip-limit 14
-	      company-tooltip-align-annotations t
-	      company-require-match 'never
-	      company-dabbrev-ignore-case nil
-	      company-dabbrev-ignore-case nil
-	      company-dabbrev-downcase nil)
+              company-minimum-prefix-length 2
+              company-tooltip-limit 14
+              company-tooltip-align-annotations t
+              company-require-match 'never
+              company-dabbrev-ignore-case nil
+              company-dabbrev-ignore-case nil
+              company-dabbrev-downcase nil
+              company-global-modes '(not eshell-mode))
   :hook (after-init . global-company-mode)
   :bind (:map company-active-map
-	      ("C-p" . 'company-select-previous)
-	      ("C-n" . 'company-select-next)))
+              ("C-p" . 'company-select-previous)
+              ("C-n" . 'company-select-next)))
 
-;(use-package company-dict)
-;(use-package company-prescient)
+;; (use-package company-dict)
+;; (use-package company-prescient)
 
 ;; Helm
 (use-package helm
   :init (setq helm-display-header-line nil
-	      helm-mode-line-string nil
-	      helm-ff-auto-update-initial-value nil
-	      helm-find-files-doc-header nil
-	      helm-display-buffer-default-width nil
-	      helm-display-buffer-default-height 0.25
-	      helm-imenu-execute-action-at-once-if-one nil
-	      helm-ff-lynx-style-map nil
-	      helm-M-x-fuzzy-match t
-	      helm-buffers-fuzzy-matching t
-	      helm-recentf-fuzzy-match t)
+              helm-mode-line-string nil
+              helm-ff-auto-update-initial-value nil
+              helm-find-files-doc-header nil
+              helm-display-buffer-default-width nil
+              helm-display-buffer-default-height 0.25
+              helm-imenu-execute-action-at-once-if-one nil
+              helm-ff-lynx-style-map nil
+              helm-M-x-fuzzy-match t
+              helm-buffers-fuzzy-matching t
+              helm-recentf-fuzzy-match t)
   :bind (("M-x"   . 'helm-M-x)
-	 ("M-y"   . 'helm-show-kill-ring)
-	 ("C-c h" . 'helm-mini)
-	 ([remap find-file] . 'helm-find-files)
-	 (:map helm-map
-	       ("C-p" . 'helm-previous-line)
-	       ("C-n" . 'helm-next-line))))
+         ("M-y"   . 'helm-show-kill-ring)
+         ("C-c h" . 'helm-mini)
+         ([remap find-file] . 'helm-find-files)))
 
 ;; Use ripgrep
 (use-package helm-rg)
@@ -127,14 +120,17 @@
 (use-package helm-swoop
   :after (helm)
   :bind (:map helm-swoop-map
-	      ("C-p" . 'helm-previous-line)
-	      ("C-n" . 'helm-nex-line)))
+              ("C-p" . 'helm-previous-line)
+              ("C-n" . 'helm-next-line)))
 
 ;; MAGIT!
 (use-package magit)
 
+;; Flycheck
+(use-package flycheck)
+
 ;;
-;; Below is some more prettyfications
+;; Below are some more prettyfications
 ;;
 (use-package all-the-icons
   :commands (all-the-icons-octicon
@@ -148,33 +144,53 @@
   :init (setq rainbow-delimiters-max-face-count 3)
   :hook (after-init . rainbow-delimiters-mode))
 
-;; A pretty mode-line
-;(use-package anzu
-;  :config
-;  (global-anzu-mode t))
-  ;:config
-  ;(progn
-  ;  (global-anzu-mode +1)
-  ;  (global-set-key [remap query-replace] 'anzu-query-replace)
-  ;  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp))
-  
-;; "My own" normal mode
-(require 'modal)
-(global-set-key (kbd "<f1>")
-		(lambda ()
-		  (interactive)
-		  (keyboard-escape-quit)
-		  (modal-mode 1)))
+;; Indent-mode for indent based stuff
+(use-package indent-tools)
 
-;; LSP
+;; Language server
 (use-package eglot
   :bind (:map eglot-mode-map
-	      ("d" . xref-find-definitions)
+              ("d" . xref-find-definitions)
               ("h" . eglot-help-at-point)
               ("a" . eglot-code-actions)
-	      ("r" . eglot-rename))
+              ("r" . eglot-rename))
   :bind-keymap ("C-c l" . eglot-mode-map))
 
-;; Python mode
-(use-package python
-  :mode ("\\.py\\'" . python-mode))
+;; Markdown
+(use-package markdown-mode)
+
+;; Typescript
+(use-package typescript-mode)
+
+;; YAML
+(use-package yaml-mode
+  :hook yaml 'indent-tools-minor-mode)
+
+;; Python
+(use-package pyvenv)
+
+;; Emacs Lisp
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (paredit-mode 1)))
+
+;;
+;; Project setup
+;;
+(defun project-type-p (type)
+  (eq type (projectile-project-type)))
+
+(defmacro with-project-file (file-binding &rest body)
+  (let ((binding (car file-binding)) (file-name (cadr file-binding)))
+    `(let ((,binding (expand-file-name ,file-name (projectile-project-root))))
+       (when (file-exists-p ,binding) ,@body))))
+
+(add-hook 'projectile-after-switch-project-hook
+          (lambda ()
+            (cond
+             ;; Python project, enable python venv
+             ((project-type-p 'python-tox)
+              (with-project-file (venv ".env")
+                                 (pyvenv-mode 1)
+                                 (pyvenv-activate venv))))))
+
