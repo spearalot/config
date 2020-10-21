@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+SCRIPT=$0
+DIR=$(dirname $0)
+
+function list {
+  for f in $DIR/*; do
+    if [ ! "$f" -ef "$SCRIPT" ] && [ -f "$f" ]; then
+      echo $(basename $f)
+    fi
+  done
+}
+
+RUN=$(list | dmenu)
+if [ -n "$RUN" ]; then
+	bash $DIR/$RUN
+fi

@@ -1,0 +1,33 @@
+
+general {
+    output_format = "i3bar"
+    colors = false
+    markup = pango
+    interval = 5
+}
+
+order += "volume master"
+order += "cpu_temperature 0"
+order += "load"
+order += "tztime local"
+
+cpu_temperature 0 {
+    format = " %degrees °C "
+    path = "/sys/class/thermal/thermal_zone0/temp"
+}
+
+load {
+    format = " %5min Load "
+}
+
+tztime local {
+    format = " %a %W %Y-%m-%d %H:%M"
+}
+
+volume master {
+    format = " %volume "
+    format_muted = " muted (%volume) "
+    device = "default"
+    mixer = "Master"
+    mixer_idx = 0
+}

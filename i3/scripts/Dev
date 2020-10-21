@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DIR=$(dirname $0)
+i3-msg "workspace 1; append_layout $DIR/layouts/dev.json"
+i3-msg "workspace 1; exec chromium"
+i3-msg "workspace 1; exec emacs"

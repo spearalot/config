@@ -1,0 +1,76 @@
+{
+    "border": "pixel",
+    "floating": "auto_off",
+    "layout": "splitv",
+    "percent": 0.319010416666667,
+    "type": "con",
+    "nodes": [
+	{
+	    "border": "normal",
+	    "current_border_width": 2,
+	    "floating": "auto_off",
+	    "name": "Terminals",
+	    "swallows": [
+	       {
+		 "class": "^kitty$"
+	       }
+	    ],
+	    "type": "con"
+	}
+    ]
+}
+
+{
+    "border": "normal",
+    "current_border_width": 2,
+    "floating": "auto_off",
+    "geometry": {
+       "height": 639,
+       "width": 672,
+       "x": 0,
+       "y": 0
+    },
+    "name": "Emacs",
+    "percent": 0.372916666666667,
+    "swallows": [
+       {
+         "class": "^Emacs$"
+       }
+    ],
+    "type": "con"
+}
+
+{
+    "border": "pixel",
+    "floating": "auto_off",
+    "layout": "splitv",
+    "percent": 0.308072916666667,
+    "type": "con",
+    "nodes": [
+	{
+	    "border": "normal",
+	    "current_border_width": 2,
+	    "floating": "auto_off",
+	    "name": "Firefox",
+	    "swallows": [
+	       {
+		 "class": "^firefox$"
+	       }
+	    ],
+	    "type": "con"
+	},
+	{
+	    "border": "normal",
+	    "current_border_width": 2,
+	    "floating": "auto_off",
+	    "name": "Firefox",
+	    "swallows": [
+	       {
+		 "class": "^Chromium$"
+	       }
+	    ],
+	    "type": "con"
+	}
+    ]
+}
+

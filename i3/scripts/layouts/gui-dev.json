@@ -1,0 +1,31 @@
+{
+    "type": "con",
+    "percent": 0.333,
+    "swallows": [
+       {
+       "class": "^Chromium$"
+       }
+    ]
+}
+
+{
+    "type": "con",
+    "percent": 0.333,
+    "swallows": [
+       {
+       "class": "^Emacs$"
+       }
+    ]
+}
+
+{
+    "type": "con",
+    "layout": "splitv",
+    "percent": 0.333,
+    "swallows": [
+       {
+           "class": "^kitty$"
+       }
+    ]
+}
+
