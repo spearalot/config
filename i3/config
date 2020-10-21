@@ -199,7 +199,7 @@ bar {
 
 exec --no-startup-id xsettingsd &
 #exec --no-startup-id picom -fc --config ~/.config/picom.conf
-exec --no-startup-id nitrogen --set-scaled "/home/spearalot/Pictures/Wallpapers/2019-12-26 16.48.12.jpg"
+exec --no-startup-id nitrogen --restore
 
 
 # Floating windows
