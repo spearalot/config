@@ -1,25 +1,25 @@
-;; I never use the toolbar and menubar and I prefer a darker theme.
 (menu-bar-mode 0)
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
 
-(setq
- inhibit-startup-screen t
- inhibit-startup-message t
- use-dialog-box nil
- echo-keystrokes 0.02
- resize-mini-windows 'grow-only
- max-mini-window-height 0.15
- make-backup-files nil)
+(setq inhibit-startup-screen t
+      inhibit-startup-message t
+      use-dialog-box nil
+      echo-keystrokes 0.02
+      resize-mini-windows 'grow-only
+      max-mini-window-height 0.15
+      make-backup-files nil)
 
-(setq-default
- indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil)
 
+;; Relative line numbers
 (global-display-line-numbers-mode 1)
 (setq display-line-numbers 'relative)
 
 ;; Why is ~/.emacs.d/site-lisp not added to the default load-path
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
+(load "~/.emacs.d/private.el")
+
 
 ;; Load the stright package management system which allows us
 ;; to manage and define packages and versions in the init file
@@ -37,9 +37,72 @@
         doom-themes-enable-italic t)
   (load-theme 'doom-one t))
 
-;; Parenthesis
-(use-package paredit
-  :config (enable-paredit-mode))
+;; MOOD line
+(use-package mood-line
+  :config (mood-line-mode 1))
+
+;; A proper editor
+(use-package evil
+  :init (setq evil-want-keybinding nil)
+  :config (evil-mode 1))
+(use-package evil-collection
+  :after evil)
+(use-package evil-snipe
+  :after evil
+  :config
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1))
+(use-package evil-surround
+  :after evil
+  :config (global-evil-surround-mode 1))
+(use-package evil-commentary
+  :after evil
+  :config (evil-commentary-mode))
+(use-package evil-cleverparens
+  :after evil
+  :hook (emacs-lisp . evil-cleverparens-mode))
+
+;; Keybindings
+(use-package general
+  :config
+  (general-create-definer leader-defs
+    :states '(normal insert visual emacs)
+    :prefix "SPC"
+    :non-normal-prefix "M-SPC")
+
+  ;; Help
+  (general-create-definer leader-defs-help :wrapping leader-defs :infix "h")
+   (leader-defs-help
+   "v" 'describe-variable
+   "k" 'describe-key)
+
+  ;; Project
+  (general-create-definer leader-defs-project :wrapping leader-defs :infix "p")
+  (leader-defs-project
+    "p" 'projectile-switch-project
+    "f" 'projectile-find-file
+    "r" 'projectile-ripgrep)
+
+  ;; VC
+  (general-create-definer leader-defs-vc :wrapping leader-defs :infix "g")
+  (leader-defs-vc
+    "g" 'magit)
+
+  ;; Code
+  (general-create-definer leader-defs-code :wrapping leader-defs :infix "c")
+  (leader-defs-code
+   "c" 'comment-or-uncomment-region
+   "d" 'lsp-find-definition
+   "r" 'lsp-find-references))
+
+;; Fuzz dat shit
+(use-package ivy
+  :config (ivy-mode 1))
+;; (use-package counsel
+;;   :after ivy
+;;   :config
+;;   (counsel-mode 1)
+;;   (counsel-projectile t))
 
 ;; Highlight matching parens
 (show-paren-mode)
@@ -51,13 +114,9 @@
 ;; Whitespaces
 (use-package highlight-chars)
 
-;; Hydra
-(use-package hydra)
-
 ;; Projectile
 (use-package projectile
-  :bind-keymap ("C-c p" . projectile-command-map)
-  :hook (after-init . projectile-mode))
+  :config (projectile-mode 1))
 
 ;; Use ripgrep
 (use-package projectile-ripgrep)
@@ -69,69 +128,30 @@
 
 ;; Company
 (use-package company
-  :init (setq company-idle-delay 0.25
-              company-minimum-prefix-length 2
-              company-tooltip-limit 14
-              company-tooltip-align-annotations t
-              company-require-match 'never
-              company-dabbrev-ignore-case nil
-              company-dabbrev-ignore-case nil
-              company-dabbrev-downcase nil
-              company-global-modes '(not eshell-mode))
-  :hook (after-init . global-company-mode)
-  :bind (:map company-active-map
-              ("C-p" . 'company-select-previous)
-              ("C-n" . 'company-select-next)))
+  :init
+  (setq company-idle-delay 0.25
+        company-minimum-prefix-length 2
+        company-tooltip-limit 14
+        company-tooltip-align-annotations t
+        company-require-match 'never
+        company-dabbrev-ignore-case nil
+        company-dabbrev-ignore-case nil
+        company-dabbrev-downcase nil
+        company-global-modes '(not eshell-mode))
+  :config
+  (company-mode 1))
 
 ;; (use-package company-dict)
 ;; (use-package company-prescient)
 
-;; Helm
-(use-package helm
-  :init (setq helm-display-header-line nil
-              helm-mode-line-string nil
-              helm-ff-auto-update-initial-value nil
-              helm-find-files-doc-header nil
-              helm-display-buffer-default-width nil
-              helm-display-buffer-default-height 0.25
-              helm-imenu-execute-action-at-once-if-one nil
-              helm-ff-lynx-style-map nil
-              helm-M-x-fuzzy-match t
-              helm-buffers-fuzzy-matching t
-              helm-recentf-fuzzy-match t)
-  :bind (("M-x"   . 'helm-M-x)
-         ("M-y"   . 'helm-show-kill-ring)
-         ("C-c h" . 'helm-mini)
-         ([remap find-file] . 'helm-find-files)))
-
-;; Use ripgrep
-(use-package helm-rg)
-
-;; Helm for projectile
-(use-package helm-projectile
-  :hook (after-init . helm-projectile-on)
-  :after (helm))
-
-;; Company integration
-(use-package helm-company
-  :after (helm))
-
-;; Helm swoop
-(use-package helm-swoop
-  :after (helm)
-  :bind (:map helm-swoop-map
-              ("C-p" . 'helm-previous-line)
-              ("C-n" . 'helm-next-line)))
+;; Flycheck
+(use-package flycheck
+  :config (setq flycheck-checkers '()))
 
 ;; MAGIT!
 (use-package magit)
 
-;; Flycheck
-(use-package flycheck)
-
-;;
 ;; Below are some more prettyfications
-;;
 (use-package all-the-icons
   :commands (all-the-icons-octicon
              all-the-icons-faicon
@@ -140,21 +160,40 @@
              all-the-icons-material
              all-the-icons-alltheicon))
 
+;; Nice and easy to pair up parens
 (use-package rainbow-delimiters
-  :init (setq rainbow-delimiters-max-face-count 3)
-  :hook (after-init . rainbow-delimiters-mode))
-
-;; Indent-mode for indent based stuff
-(use-package indent-tools)
+  :config
+  (setq rainbow-delimiters-max-face-count 3)
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; Language server
-(use-package eglot
-  :bind (:map eglot-mode-map
-              ("d" . xref-find-definitions)
-              ("h" . eglot-help-at-point)
-              ("a" . eglot-code-actions)
-              ("r" . eglot-rename))
-  :bind-keymap ("C-c l" . eglot-mode-map))
+(use-package lsp-mode
+  :hook (python-mode . lsp)
+  :config
+  (setq lsp-lens-enable nil
+        lsp-headerline-breadcrumb-enable nil
+        lsp-modeline-code-actions-enable nil)
+  :commands lsp)
+
+;; Keep the junk away
+(use-package lsp-docker
+  ;; :straight (lsp-docker :type git :host github :repo "spearalot/lsp-docker")
+  :after lsp-mode
+  :config
+  (setq lsp-docker-command "flatpak-spawn --host docker")
+  (lsp-docker-init-clients :docker-image-id "emacs-lsp" :path-mappings '(("/home/maca/Dev" . "/projects"))))
+
+(use-package lsp-ui
+  :after lsp-mode
+  :config
+  (setq lsp-ui-doc-enable nil
+        lsp-ui-sideline-enable nil
+        lsp-ui-sideline-code-actions-prefix nil)
+  :commands lsp-ui-mode)
+
+(use-package company-lsp
+  :after lsp-mode
+  :commands company-lsp)
 
 ;; Markdown
 (use-package markdown-mode)
@@ -165,32 +204,3 @@
 ;; YAML
 (use-package yaml-mode
   :hook yaml 'indent-tools-minor-mode)
-
-;; Python
-(use-package pyvenv)
-
-;; Emacs Lisp
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-            (paredit-mode 1)))
-
-;;
-;; Project setup
-;;
-(defun project-type-p (type)
-  (eq type (projectile-project-type)))
-
-(defmacro with-project-file (file-binding &rest body)
-  (let ((binding (car file-binding)) (file-name (cadr file-binding)))
-    `(let ((,binding (expand-file-name ,file-name (projectile-project-root))))
-       (when (file-exists-p ,binding) ,@body))))
-
-(add-hook 'projectile-after-switch-project-hook
-          (lambda ()
-            (cond
-             ;; Python project, enable python venv
-             ((project-type-p 'python-tox)
-              (with-project-file (venv ".env")
-                                 (pyvenv-mode 1)
-                                 (pyvenv-activate venv))))))
-
