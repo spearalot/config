@@ -46,26 +46,39 @@
   (setq evil-want-keybinding nil
         evil-move-beyond-eol t)
   :config (evil-mode 1))
+
 (use-package evil-collection
-  :after evil)
+  :after evil
+  :config
+  (evil-collection-init))
+
 (use-package evil-snipe
   :after evil
   :config
   (evil-snipe-mode 1)
   (evil-snipe-override-mode 1))
+
 (use-package evil-surround
   :after evil
   :config (global-evil-surround-mode 1))
+
 (use-package evil-commentary
   :after evil
   :hook (prog-mode . evil-commentary-mode))
+
+(use-package evil-multiedit
+  :after evil
+  :config
+  (evil-multiedit-default-keybinds))
 
 ;; Fuzz dat shit
 (use-package ivy
   :after (projectile company evil)
   :config (ivy-mode 1))
+
 (use-package counsel
   :after ivy)
+
 (use-package ivy-prescient
   :after counsel
   :config (ivy-prescient-mode 1))
@@ -114,11 +127,18 @@
     "k" 'describe-key)
 
   ;; Files
-  (general-create-definer leader-defs-vc :wrapping leader-defs :infix "f")
-  (leader-defs-vc
+  (general-create-definer leader-defs-file :wrapping leader-defs :infix "f")
+  (leader-defs-file
     "f" 'counsel-find-file
     "d" 'counsel-dired
     "z" 'counsel-fzf)
+
+  ;; Buffers
+  (general-create-definer leader-defs-buf :wrapping leader-defs :infix "b")
+  (leader-defs-buf
+    "b" 'counsel-ibuffer
+    "s" 'counsel-switch-buffer
+    "d" 'kill-buffer)
 
   ;; VC
   (general-create-definer leader-defs-vc :wrapping leader-defs :infix "g")
@@ -185,20 +205,46 @@
 ;; Erlang
 (use-package erlang)
 
-;; Typescript
-(use-package typescript-mode
+;; Web
+(use-package web-mode  :ensure t
+  :mode (("\\.js\\'" . web-mode)
+         ("\\.jsx\\'" . web-mode)
+         ("\\.ts\\'" . web-mode)
+         ("\\.tsx\\'" . web-mode)
+         ("\\.html\\'" . web-mode)
+         ("\\.vue\\'" . web-mode)
+	 ("\\.json\\'" . web-mode))
+  :hook (web-mode . (lambda ()
+                      (add-to-list 'projectile-project-root-files "package.json")
+                      (add-to-list 'projectile-ignored-directories "node_modules")))
   :config
-  (setq typescript-indent-level 2)
-  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode))
-  :hook (typescript-mode . (lambda ()
-                             (add-to-list 'projectile-project-root-files "package.json")
-                             (add-to-list 'projectile-ignored-directories "node_modules"))))
+  (setq
+   web-mode-markup-indent-offset 2
+   web-mode-css-indent-offset 2
+   web-mode-code-indent-offset 2
+   web-mode-block-padding 2
+   web-mode-comment-style 2
+
+   web-mode-content-types-alist
+   '(("jsx" . "\\.js[x]?\\'")))
+  :commands web-mode)
+
+
+;; Typescript
+;; (use-package typescript-mode
+;;   :straight (typescript-mode :local-repo "/home/maca/Dev/typescript.el")
+;;   :config
+;;   (setq typescript-indent-level 2)
+;;   (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode))
+;;   :hook (typescript-mode . (lambda ()
+;;                              (add-to-list 'projectile-project-root-files "package.json")
+;;                              (add-to-list 'projectile-ignored-directories "node_modules"))))
 
 ;; Language server
 (use-package lsp-mode
   :hook
   ((python-mode . lsp)
-   (typescript-mode . lsp))
+   (web-mode . lsp))
   :config
   (setq lsp-keymap-prefix nil
         lsp-lens-enable nil
@@ -210,9 +256,9 @@
   ;; Set reasonable deps for flatpak docker
   (progn
     (require 'lsp-pyls)
-    (require 'lsp-javascript)
+    (require 'lsp-html)
     (lsp-dependency 'python (list :system "/usr/bin/flatpak-spawn"))
-    (lsp-dependency 'typescript (list :system "/usr/bin/flatpak-spawn")))
+    (lsp-dependency 'html (list :system "/usr/bin/flatpak-spawn")))
   :commands lsp)
 
 ;; Keep the junk away
@@ -221,7 +267,18 @@
   :after lsp-mode
   :config
   (setq lsp-docker-command "flatpak-spawn --host docker")
-  (lsp-docker-init-clients :docker-image-id "emacs-lsp" :path-mappings '(("/home/maca/Dev" . "/projects"))))
+
+  (defvar lsp-docker-client-packages '(lsp-pyls lsp-html))
+  (defvar lsp-docker-client-configs
+   (list
+   (list :server-id 'html-ls :docker-server-id 'htmls-docker :server-command "typescript-language-server --stdio")
+   (list :server-id 'pyls :docker-server-id 'pyls-docker :server-command "pyls")))
+
+  (lsp-docker-init-clients
+   :docker-image-id "emacs-lsp"
+   :client-packages lsp-docker-client-packages
+   :client-configs lsp-docker-client-configs
+   :path-mappings '(("/home/maca/Dev" . "/projects"))))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -234,3 +291,5 @@
 (use-package company-lsp
   :after lsp-mode
   :commands company-lsp)
+
+(use-package font-lock-studio)
