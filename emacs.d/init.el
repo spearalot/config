@@ -4,11 +4,19 @@
 
 (setq inhibit-startup-screen t
       inhibit-startup-message t
+
       use-dialog-box nil
+      x-gtk-use-system-tooltips nil
+
       echo-keystrokes 0.02
+      
       resize-mini-windows 'grow-only
       max-mini-window-height 0.15
-      make-backup-files nil)
+
+      make-backup-files nil
+
+      frame-resize-pixelwise t
+      window-resize-pixelwise nil)
 
 (setq-default indent-tabs-mode nil)
 
@@ -20,6 +28,11 @@
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
 (load "~/.emacs.d/private.el")
 
+;; flatpak override commands
+(defvar flatpak-command "/usr/bin/flatpak-spawn")
+(defvar flatpak-rg-command "/usr/bin/flatpak-spawn --host rg")
+(defvar flatpak-fzf-command "/usr/bin/flatpak-spawn --host fzf")
+
 ;; Load the stright package management system which allows us
 ;; to manage and define packages and versions in the init file
 ;; without integrating without 'package.el'
@@ -28,6 +41,16 @@
 ;; Setup use-package
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
+
+;; Below are some more prettyfications
+(use-package all-the-icons
+  :commands
+  (all-the-icons-octicon
+   all-the-icons-faicon
+   all-the-icons-fileicon
+   all-the-icons-wicon
+   all-the-icons-material
+   all-the-icons-alltheicon))
 
 ;; DOOM themes
 (use-package doom-themes
@@ -38,14 +61,16 @@
 
 ;; MOOD line
 (use-package mood-line
-  :config (mood-line-mode 1))
+  :config
+  (mood-line-mode 1))
 
 ;; A proper editor
 (use-package evil
   :init
   (setq evil-want-keybinding nil
         evil-move-beyond-eol t)
-  :config (evil-mode 1))
+  :config
+  (evil-mode 1))
 
 (use-package evil-collection
   :after evil
@@ -60,35 +85,56 @@
 
 (use-package evil-surround
   :after evil
-  :config (global-evil-surround-mode 1))
+  :config
+  (global-evil-surround-mode 1))
 
 (use-package evil-commentary
   :after evil
-  :hook (prog-mode . evil-commentary-mode))
+  :hook
+  (prog-mode . evil-commentary-mode))
 
 (use-package evil-multiedit
   :after evil
   :config
   (evil-multiedit-default-keybinds))
 
+;; Projectile
+(use-package projectile
+  :config
+  (projectile-mode 1))
+
+;; Use ripgrep
+(use-package projectile-ripgrep
+  :after projectile
+  :config
+  (setq ripgrep-executable flatpak-rg-command))
+
 ;; Fuzz dat shit
 (use-package ivy
   :after (projectile company evil)
-  :config (ivy-mode 1))
+  :config
+  (ivy-mode 1))
 
 (use-package counsel
-  :after ivy)
+  :after ivy
+  :config
+  (setq
+   counsel-fzf-cmd flatpak-fzf-command
+   counsel-rg-base-command flatpak-rg-command
+   counsel-find-file-ignore-regexp (regexp-opt completion-ignored-extensions)))
+
+(use-package counsel-projectile
+  :after (counsel projectile))
 
 (use-package ivy-prescient
   :after counsel
-  :config (ivy-prescient-mode 1))
+  :config
+  (ivy-prescient-mode 1))
 
-;; Projectile
-(use-package projectile
-  :config (projectile-mode 1))
-
-;; Use ripgrep
-(use-package projectile-ripgrep)
+(use-package all-the-icons-ivy
+  :after (all-the-icons counsel)
+  :config
+  (all-the-icons-ivy-setup))
 
 ;; Company
 (use-package company
@@ -102,75 +148,78 @@
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
         company-global-modes '(not eshell-mode))
-  :hook (prog-mode . company-mode)
-  :bind ((:map company-mode-map
-               ("C-p" . company-prev)
-               ("C-n" . company-next))))
+  :hook (prog-mode . company-mode))
+  ;; :bind
+  ;; ((:map company-mode-map
+  ;;        ("C-p" . company-prev)
+  ;;        ("C-n" . company-next))))
+
 (use-package company-prescient
   :after company
-  :config (company-prescient-mode 1))
+  :config
+  (company-prescient-mode 1))
 ;; (use-package company-dict)
 
 ;; Keybindings
-(use-package general
+(use-package which-key
   :config
+  (which-key-mode))
+
+(use-package general
+  :after which-key
+  :config
+  (general-evil-setup 1)
+
   (general-create-definer leader-defs
     :states '(normal insert visual emacs)
     :prefix "SPC"
     :non-normal-prefix "M-SPC")
 
-  ;; Help
-  (general-create-definer leader-defs-help :wrapping leader-defs :infix "h")
-  (leader-defs-help
-    "v" 'counsel-describe-variable
-    "f" 'counsel-describe-function
-    "k" 'describe-key)
+  (leader-defs
+    "x" (general-simulate-key "C-x" :which-key "C-x")
+    "r" (general-simulate-key "C-r" :which-key "C-r")
+    
+    "h" '(:ignore t :which-key "Help")
+    "hv" '(counsel-describe-variable :which-key "Variable")
+    "hf" '(counsel-describe-function :which-key "Function")
+    "hk" '(describe-key :which-key "Key")
 
-  ;; Files
-  (general-create-definer leader-defs-file :wrapping leader-defs :infix "f")
-  (leader-defs-file
-    "f" 'counsel-find-file
-    "d" 'counsel-dired
-    "z" 'counsel-fzf)
+    "f" '(:ignore t :which-key "File")
+    "ff" '(counsel-find-file :which-key "Open")
+    "fd" '(counsel-dired :which-key "Dired")
+    "fz" '(counsel-fzf :which-key "FZF")
+    "fr" '(counsel-recentf :which-key "Recents")
 
-  ;; Buffers
-  (general-create-definer leader-defs-buf :wrapping leader-defs :infix "b")
-  (leader-defs-buf
-    "b" 'counsel-ibuffer
-    "s" 'counsel-switch-buffer
-    "d" 'kill-buffer)
+    "b" '(:ignore t :which-key "Buffer")
+    "bl" '(counsel-ibuffer :which-key "List")
+    "bb" '(counsel-switch-buffer :which-key "Switch")
+    "bB" '(counsel-switch-buffer-other-window :which-key "Switch Other")
+    "bk" '(kill-current-buffer :which-key "Kill Current")
+    "bK" '(kill-buffer :which-key "Kill")
+    "br" '(revert-buffer :which-key "Revert")
 
-  ;; VC
-  (general-create-definer leader-defs-vc :wrapping leader-defs :infix "g")
-  (leader-defs-vc
-    "g" 'magit
-    "s" 'magit-stage)
+    "g" '(:ignore t :which-key "Git")
+    "gg" '(magit :which-key "Status")
+    "gs" '(magit-stage :which-key "Stage")
 
-  ;; Project
-  (general-create-definer leader-defs-project :wrapping leader-defs :infix "p")
-  (leader-defs-project
-    "p" 'projectile-switch-project
-    "f" 'projectile-find-file
-    "r" 'projectile-ripgrep)
+    "p" '(:ignore t :which-key "Project")
+    "pp" '(counsel-projectile-switch-project :which-key "Switch")
+    "pf" '(counsel-projectile-find-file :which-key "Open File")
+    "pr" '(counsel-projectile-rg :which-key "Grep")
 
-  ;; Code
-  (general-create-definer leader-defs-code :wrapping leader-defs :infix "c")
-  (leader-defs-code
-   "c" 'comment-or-uncomment-region
-   "d" 'lsp-find-definition
-   "r" 'lsp-find-references
-   "i" 'evil-indent-line)
+    "c" '(:ignore t :which-key "Code")
+    "cc" '(comment-or-uncomment-region :which-key "Comment")
+    "cd" '(lsp-find-definition :which-key "Find definition")
+    "cr" '(lsp-find-references :which-key "Find references")
+    "ci" '(evil-indent-line :which-key "Indent")
 
-  ;; Completes
-  (general-create-definer leader-defs-completes :wrapping leader-defs :infix "x")
-  (leader-defs-completes
-    "c" 'company-complete
-    "f" 'company-files
-    "y" 'company-yassnippet))
+    "m" '(counsel-bookmark :which-key "Bookmark")))
+
 
 ;; Flycheck
 (use-package flycheck
-  :config (setq flycheck-checkers '()))
+  :config
+  (setq flycheck-checkers '()))
 
 ;; MAGIT!
 (use-package magit)
@@ -181,20 +230,12 @@
 ;;   :config
 ;;   (yas-load-directory (expand-file-name "yas" user-emacs-directory)))
 
-;; Below are some more prettyfications
-(use-package all-the-icons
-  :commands (all-the-icons-octicon
-             all-the-icons-faicon
-             all-the-icons-fileicon
-             all-the-icons-wicon
-             all-the-icons-material
-             all-the-icons-alltheicon))
-
 ;; Nice and easy to pair up parens
 (use-package rainbow-delimiters
   :config
   (setq rainbow-delimiters-max-face-count 3)
-  :hook (prog-mode . rainbow-delimiters-mode))
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
 
 ;; Markdown
 (use-package markdown-mode)
@@ -207,16 +248,18 @@
 
 ;; Web
 (use-package web-mode  :ensure t
-  :mode (("\\.js\\'" . web-mode)
-         ("\\.jsx\\'" . web-mode)
-         ("\\.ts\\'" . web-mode)
-         ("\\.tsx\\'" . web-mode)
-         ("\\.html\\'" . web-mode)
-         ("\\.vue\\'" . web-mode)
-	 ("\\.json\\'" . web-mode))
-  :hook (web-mode . (lambda ()
-                      (add-to-list 'projectile-project-root-files "package.json")
-                      (add-to-list 'projectile-ignored-directories "node_modules")))
+  :mode
+  (("\\.js\\'" . web-mode)
+   ("\\.jsx\\'" . web-mode)
+   ("\\.ts\\'" . web-mode)
+   ("\\.tsx\\'" . web-mode)
+   ("\\.html\\'" . web-mode)
+   ("\\.vue\\'" . web-mode)
+   ("\\.json\\'" . web-mode))
+  :hook
+  (web-mode . (lambda ()
+                (add-to-list 'projectile-project-root-files "package.json")
+                (add-to-list 'projectile-ignored-directories "node_modules")))
   :config
   (setq
    web-mode-markup-indent-offset 2
@@ -243,8 +286,9 @@
 ;; Language server
 (use-package lsp-mode
   :hook
-  ((python-mode . lsp)
-   (web-mode . lsp))
+  ((web-mode . lsp)
+   (yaml-mode . lsp)
+   (python-mode . lsp))
   :config
   (setq lsp-keymap-prefix nil
         lsp-lens-enable nil
@@ -257,8 +301,10 @@
   (progn
     (require 'lsp-pyls)
     (require 'lsp-html)
-    (lsp-dependency 'python (list :system "/usr/bin/flatpak-spawn"))
-    (lsp-dependency 'html (list :system "/usr/bin/flatpak-spawn")))
+    (require 'lsp-yaml)
+    (lsp-dependency 'html (list :system flatpak-command))
+    (lsp-dependency 'python (list :system flatpak-command))
+    (lsp-dependency 'yaml-language-server (list :system flatpak-command)))
   :commands lsp)
 
 ;; Keep the junk away
@@ -268,11 +314,12 @@
   :config
   (setq lsp-docker-command "flatpak-spawn --host docker")
 
-  (defvar lsp-docker-client-packages '(lsp-pyls lsp-html))
+  (defvar lsp-docker-client-packages '(lsp-pyls lsp-html lsp-yaml))
   (defvar lsp-docker-client-configs
    (list
    (list :server-id 'html-ls :docker-server-id 'htmls-docker :server-command "typescript-language-server --stdio")
-   (list :server-id 'pyls :docker-server-id 'pyls-docker :server-command "pyls")))
+   (list :server-id 'pyls :docker-server-id 'pyls-docker :server-command "pyls")
+   (list :server-id 'yamlls :docker-server-id 'yamlls-docker :server-command "yaml-language-server --stdio")))
 
   (lsp-docker-init-clients
    :docker-image-id "emacs-lsp"
