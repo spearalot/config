@@ -28,11 +28,11 @@ done
 # Full
 if [ $BLOCK_FORMAT = 'full' ]
 then
-    echo ${FULL[@]}
+ echo "" ${FULL[@]}
 else
-    echo ${SHORT[@]}
+    echo "" ${SHORT[@]}
 fi
 
 # Short
-echo ${SHORT[@]}
+echo "" ${SHORT[@]}
 
