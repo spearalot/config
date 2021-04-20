@@ -1,7 +1,0 @@
-#!/bin/bash
-
-DIR=$(dirname $0)
-i3-msg "workspace 1; append_layout $DIR/layouts/gui-dev.json"
-i3-msg "workspace 1; exec chromium --proxy-server=localhost:8000"
-i3-msg "workspace 1; exec emacs"
-i3-msg "workspace 1; exec kitty"

@@ -2,5 +2,9 @@
 
 DIR=$(dirname $0)
 i3-msg "workspace 1; append_layout $DIR/layouts/dev.json"
-i3-msg "workspace 1; exec chromium"
-i3-msg "workspace 1; exec emacs"
+i3-msg "workspace 1; exec firefox"
+i3-msg "workspace 1; exec kitty"
+i3-msg "workspace 1; exec flatpak run org.gnu.emacs"
+i3-msg "workspace 1; exec flatpak run com.slack.Slack"
+i3-msg "workspace 2; exec flatpak run com.spotify.Client"
+i3-msg "workspace 2; exec flatpak run com.microsoft.Teams"

@@ -2,27 +2,38 @@
 
 set $mod Mod4
 
+# Dark
+set $bg     #353535
+set $fg     #cccccc
+set $ic     #cccccc
+
+# Light
+# set $bg     #ffffff
+# set $fg     #000000
+# set $ic     #3d3d3d
+
+# Pop OS Orange and Cyanish
+set $ac     #faa41a
+set $xc     #48b9c7
+
+
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
 #font pango:monospace 8
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
-font pango:DejaVu Sans Mono 10
+font pango:Monospace 11
 
 # Remove the titlebar of windows
 new_window pixel 3
 for_window [class="^.*"] border pixel 3
 
 # class                 border  backgr. text    indicator child_border
-client.focused          #4c7899 #285577 #ffffff #2e9ef4   #285577
-client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
-client.unfocused        #333333 #222222 #888888 #292d2e   #222222
-client.urgent           #2f343a #900000 #ffffff #900000   #900000
-client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+client.focused          $ac     $bg     $fg     $ac       $ac
 
 # Gaps
-smart_gaps on
+#smart_gaps on
 gaps inner 15
 gaps outer -5
 
@@ -52,8 +63,8 @@ floating_modifier $mod
 # start a terminal
 bindsym $mod+Return exec kitty
 
-# start emacs
-bindsym $mod+Shift+Return exec emacs
+# start firefox
+bindsym $mod+Shift+Return exec firefox
 
 # Switch mode
 bindsym $mod+Shift+m exec --no-startup-id ~/.config/i3/scripts/launcher
@@ -61,12 +72,8 @@ bindsym $mod+Shift+m exec --no-startup-id ~/.config/i3/scripts/launcher
 # kill focused window
 bindsym $mod+Shift+q kill
 
-# start dmenu (a program launcher)
-#bindsym $mod+d exec dmenu_run
-# There also is the (new) i3-dmenu-desktop which only displays applications
-# shipping a .desktop file. It is a wrapper around dmenu, so you need that
-# installed.
-bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+# Run programs
+bindsym $mod+d exec --no-startup-id rofi -modi drun -show drun
 
 # Use playerctl to change tracks
 bindsym $mod+Left exec --no-startup-id playerctl previous
@@ -151,8 +158,6 @@ bindsym $mod+Shift+0 move container to workspace number $ws10
 bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
-# exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exit
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -182,26 +187,32 @@ mode "$mode_system" {
     bindsym Escape mode "default"
 }
 
-bindsym $mod+Pause mode "$mode_system"
+bindsym $mod+Escape mode "$mode_system"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
 bar {
     colors {
-        background #00000000
+        background $bg
+        statusline $fg
+        focused_workspace $ac $ac $bg
+        inactive_workspace $fg $ic $bg
     }
 
-    font pango:DejaVu Sans Mono 10, Awesome 10
+#    font pango: Monospace, Font Awesome 11
+    font pango: JetBrainsMono, Font Awesome  11
+
     position top
 
-    status_command i3status
+    status_command i3blocks
 }
 
-exec --no-startup-id xsettingsd &
-#exec --no-startup-id picom -fc --config ~/.config/picom.conf
-exec --no-startup-id nitrogen --restore
+#exec --no-startup-id xsettingsd &
+exec --no-startup-id picom -CG
+exec --no-startup-id nitrogen --set-scaled --random ~/Pictures/Wallpapers
+exec --no-startup-id dex -ae i3
 
 
 # Floating windows
-for_window [class="Spotify" instance="spotify"] floating enable
+#for_window [class="Spotify" instance="spotify"] floating enable
 for_window [class="Galculator" instance="galculator"] floating enable

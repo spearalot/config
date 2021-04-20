@@ -1,20 +1,43 @@
 {
-    "type": "con",
-    "percent": 0.5,
-    "swallows": [
-       {
-       "class": "^Chromium$"
-       }
-    ]
+  "type": "con",
+  "percent": 0.3,
+  "swallows": [
+    {
+      "class": "^Firefox$"
+    }
+  ]
 }
 
 {
-    "type": "con",
-    "percent": 0.5,
-    "swallows": [
-       {
-       "class": "^Emacs$"
-       }
-    ]
+  "type": "con",
+  "percent": 0.3,
+  "swallows": [
+    {
+      "class": "^Emacs$"
+    }
+  ]
 }
 
+{
+  "type": "con",
+  "layout": "splitv",
+  "percent": 0.3,
+  "nodes": [
+    {
+      "type": "con",
+      "swallows": [
+        {
+          "class": "^Slack$"
+        }
+      ]
+    },
+    {
+      "type": "con",
+      "swallows": [
+        {
+          "class": "^kitty$"
+        }
+      ]
+    }
+  ]
+}
