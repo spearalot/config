@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if iw wlp0s20f3 info > /dev/null
+then
+	SSID=$(iw wlp0s20f3 info | grep ssid | cut -b 7-)
+	SIGNAL=$(iw wlp0s20f3 station dump | grep '^[[:space:]]signal avg:' | cut -b 15-17)
+	echo $SIGNAL $SSID
+fi

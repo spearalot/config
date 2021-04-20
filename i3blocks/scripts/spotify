@@ -1,0 +1,10 @@
+#/bin/bash
+
+STATUS=$(playerctl status)
+ARTIST=$(playerctl metadata artist)
+TRACK=$(playerctl metadata title)
+
+if [ "$STATUS" = "Playing" ]
+then
+    echo "$TRACK - $ARTIST"
+fi

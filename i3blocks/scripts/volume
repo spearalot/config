@@ -1,0 +1,38 @@
+#!/bin/bash
+
+readarray -t CARD < <(pactl list sinks | grep 'alsa.card_name' | cut -b 20- | tr -d '"' | sed -e 's/USB Sound Card//' -e 's/HDA//' -e 's/PCH//' | tr -d ' ')
+readarray -t VOLUME < <(pactl list sinks | grep '^[[:space:]]Volume' | cut -b 30-33,70-72 | tr -d ' ' | tr '%' ' ')
+readarray -t MUTED < <(pactl list sinks | grep 'Mute' | cut -b 8-)
+
+function max() {
+    ARR=($1)
+    LEFT=${ARR[0]}
+    RIGHT=${ARR[1]}
+    echo $((LEFT > RIGHT ? LEFT : RIGHT))
+}
+
+FULL=()
+SHORT=()
+for (( i = 0; i < ${#VOLUME[@]}; i++ ))
+do
+    if [ "${MUTED[$i]}" == "no" ]
+    then
+        FULL+=("${CARD[$i]}: $(max ${VOLUME[$i]})%")
+        SHORT+=("$(max ${VOLUME[$i]})%")
+    else
+        FULL+=("${CARD[$i]}: -")
+        SHORT+=("-")
+    fi
+done
+
+# Full
+if [ $BLOCK_FORMAT = 'full' ]
+then
+    echo ${FULL[@]}
+else
+    echo ${SHORT[@]}
+fi
+
+# Short
+echo ${SHORT[@]}
+
