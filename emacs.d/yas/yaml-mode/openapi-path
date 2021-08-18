@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: path
+# key: path
+# --
+/$1
+  ${2:get}:
+    summary: ${3:$(capitalize (yas-field-value 1))}
+    responses:
+      $0

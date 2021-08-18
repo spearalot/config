@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: responses
+# key: responses
+# --
+'${1:200}':
+  content:
+    application/json:
+      schema:
+        $0
+'400':
+    description: The client sent an invalid request.
+'401':
+    description: The client is not authorized.
+'500':
+    description: An internal server error.

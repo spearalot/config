@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: requestBody
+# key: requestBody
+# --
+requestBody:
+  content:
+    application/json:
+    schema:
+        type: object
+        properties:
+          $0

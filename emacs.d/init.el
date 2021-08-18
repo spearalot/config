@@ -27,19 +27,20 @@
 
 ;; Relative line numbers
 (global-display-line-numbers-mode 1)
-(setq display-line-numbers 'relative)
+(setq-default display-line-numbers 'relative)
 
 ;; Recent files
 (recentf-mode 1)
 
 ;; Why is ~/.emacs.d/site-lisp not added to the default load-path
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
-(load "~/.emacs.d/private.el")
+(load (expand-file-name "private.el" user-emacs-directory) t)
+(load (expand-file-name "extensions.el" user-emacs-directory) t)
 
 ;; flatpak override commands
-(defvar flatpak-command "/usr/bin/flatpak-spawn")
-(defvar flatpak-rg-command "/usr/bin/flatpak-spawn --host rg")
-(defvar flatpak-fzf-command "/usr/bin/flatpak-spawn --host fzf")
+(defconst flatpak-command "/usr/bin/flatpak-spawn")
+(defconst flatpak-rg-command "/usr/bin/flatpak-spawn --host rg")
+(defconst flatpak-fzf-command "/usr/bin/flatpak-spawn --host fzf")
 
 ;; Load the stright package management system which allows us
 ;; to manage and define packages and versions in the init file
@@ -63,10 +64,8 @@
 ;; Themes
 (use-package doom-themes
   :config
-  (setq ; doom-themes-enable-bold t
-        ; doom-themes-enable-italic t
-        modus-themes-slanted-constructs t
-        modus-themes-bold-constructs nil)
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
   (load-theme 'doom-one t))
 
 ;; UI Font
@@ -79,6 +78,12 @@
 (use-package mood-line
   :config
   (mood-line-mode 1))
+
+;; Smartparens
+(use-package smartparens
+  :ensure t
+  :commands
+  smartparens-mode)
 
 ;; A proper editor
 (use-package evil
@@ -157,26 +162,6 @@
 ;; (use-package counsel-projectile
 ;;   :after (counsel projectile))
 
-;; (use-package icomplete-vertical
-;;   :ensure t
-;;   :demand t
-;;   :config
-;;   (setq
-;;    ;; (completion-styles '(partial-completion substring))
-;;    ;; (completion-category-overrides '((file (styles basic substring))))
-;;    completion-styles '(initials partial-completion flex)
-;;    completion-cycle-threshold 10
-;;    ;; (read-file-name-completion-ignore-case t)
-;;    ;; (read-buffer-completion-ignore-case t)
-;;    ;; (completion-ignore-case t)
-;;    )
-;;   (icomplete-mode 1)
-;;   (icomplete-vertical-mode 1)
-;;   :bind (:map icomplete-minibuffer-map
-;;               ("C-RET" . icomplete-force-complete-and-exit)
-;;               ("C-n" . icomplete-forward-completions)
-;;               ("C-p" . icomplete-backward-completions)))
-
 ;; Company
 (use-package company
   :init
@@ -190,16 +175,6 @@
         company-dabbrev-downcase nil
         company-global-modes '(not eshell-mode))
   :hook (prog-mode . company-mode))
-  ;; :bind
-  ;; ((:map company-mode-map
-  ;;        ("C-p" . company-prev)
-  ;;        ("C-n" . company-next))))
-
-;; (use-package company-prescient
-;;   :after company
-;;   :config
-;;   (company-prescient-mode 1))
-;; (use-package company-dict)
 
 ;; Keybindings
 (use-package which-key
@@ -271,12 +246,6 @@
   :config
   (add-to-list 'eshell-modules-list 'eshell-tramp))
 
-;; Smartparens
-(use-package smartparens
-  :ensure t
-  :commands
-  smartparens-mode)
-
 ;; Flycheck
 (use-package flycheck
   :config
@@ -334,10 +303,12 @@
   :config
   (setq
    web-mode-markup-indent-offset 2
+   web-mode-attr-value-indent-offset 2
    web-mode-css-indent-offset 2
    web-mode-code-indent-offset 2
    web-mode-block-padding 2
    web-mode-comment-style 2
+   web-mode-sql-indent-offset 2
 
    evil-shift-width 2
 
@@ -355,7 +326,7 @@
 
 (use-package kubernetes-tramp
   :config
-  (setq kubernetes-tramp-kubectl-executable "flatpak-spawn --host .local/bin/kubectl"))
+  (setq kubernetes-tramp-kubectl-executable "flatpak-spawn --host ~/.local/bin/kubectl"))
 
 ;; Language server
 (use-package lsp-mode

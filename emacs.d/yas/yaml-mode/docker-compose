@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+version: "3.3"
+services:
+  ${1:service}:
+    image: ${2:image} 
+    ports:
+      - "${3:8080}"
+    volumes:
+      - type: bind
+        source: ${4:src}
+        target: /src
+$0
