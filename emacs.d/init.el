@@ -353,7 +353,7 @@
         lsp-signature-doc-lines 1)
   ;; Set reasonable deps for flatpak docker
   (progn
-    (require 'lsp-pyls)
+    (require 'lsp-pylsp)
     (require 'lsp-html)
     (require 'lsp-yaml)
     (require 'lsp-rust)
@@ -373,13 +373,13 @@
   :config
   (setq lsp-docker-command "flatpak-spawn --host docker")
 
-  (defvar lsp-docker-client-packages '(lsp-pyls lsp-html lsp-yaml lsp-rust lsp-javascript))
+  (defvar lsp-docker-client-packages '(lsp-pylsp lsp-html lsp-yaml lsp-rust lsp-javascript))
   (defvar lsp-docker-client-configs
    (list
    (list :server-id 'rls :docker-server-id 'rls-docker :server-command "rls")
    (list :server-id 'ts-ls :docker-server-id 'tsls-docker :server-command "typescript-language-server --stdio")
    (list :server-id 'html-ls :docker-server-id 'htmls-docker :server-command "typescript-language-server --stdio")
-   (list :server-id 'pyls :docker-server-id 'pyls-docker :server-command "pyls")
+   (list :server-id 'pylsp :docker-server-id 'pylsp-docker :server-command "pylsp")
    (list :server-id 'yamlls :docker-server-id 'yamlls-docker :server-command "yaml-language-server --stdio")))
 
   (lsp-docker-init-clients
