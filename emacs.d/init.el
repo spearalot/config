@@ -39,8 +39,6 @@
 
 ;; flatpak override commands
 (defconst flatpak-command "/usr/bin/flatpak-spawn")
-(defconst flatpak-rg-command "/usr/bin/flatpak-spawn --host rg")
-(defconst flatpak-fzf-command "/usr/bin/flatpak-spawn --host fzf")
 
 ;; Load the stright package management system which allows us
 ;; to manage and define packages and versions in the init file
@@ -82,8 +80,7 @@
 ;; Smartparens
 (use-package smartparens
   :ensure t
-  :commands
-  smartparens-mode)
+  :commands smartparens-mode)
 
 ;; A proper editor
 (use-package evil
@@ -124,20 +121,19 @@
   :config
   (evil-collection-init))
 
-;; Projectile
-(use-package projectile
-  :config
-  (projectile-mode 1))
+;; Diagnostics
+(use-package flymake
+  :ensure nil
+  :hook (prog-mode . flymake-mode))
 
-;; Use ripgrep
-(use-package projectile-ripgrep
-  :after projectile
-  :config
-  (setq ripgrep-executable flatpak-rg-command))
+;; Proper search
+(use-package deadgrep
+  :init
+  (setq deadgrep-executable (expand-file-name "bin/rg" user-emacs-directory)))
 
 ;; Complete dat shit
 (use-package ivy
-  :after (projectile evil)
+  :after (evil)
   :config
   (ivy-mode 1))
 
@@ -150,17 +146,6 @@
   :after (all-the-icons ivy)
   :config
   (all-the-icons-ivy-setup))
-
-;; (use-package counsel
-;;   :after ivy
-;;   :config
-;;   (setq
-;;    counsel-fzf-cmd flatpak-fzf-command
-;;    counsel-rg-base-command flatpak-rg-command
-;;    counsel-find-file-ignore-regexp (regexp-opt completion-ignored-extensions)))
-
-;; (use-package counsel-projectile
-;;   :after (counsel projectile))
 
 ;; Company
 (use-package company
@@ -204,15 +189,12 @@
     "ff" '(find-file :which-key "Open")
     "fr" '(recentf-open-files :which-key "Recent")
     "fd" '(dired :which-key "Dired")
-    ;; "fz" '(fzf :which-key "FZF")
-    ;; "fr" '(recentf :which-key "Recents")
 
     "b" '(:ignore t :which-key "Buffer")
     "bl" '(ibuffer :which-key "List")
     "bb" '(switch-buffer :which-key "Switch")
     "bB" '(switch-buffer-other-window :which-key "Switch Other")
     "bk" '(kill-current-buffer :which-key "Kill Current")
-    "bK" '(projectile-kill-buffers :which-key "Kill Project buffers")
     "br" '(revert-buffer :which-key "Revert")
 
     "g" '(:ignore t :which-key "Git")
@@ -220,15 +202,15 @@
     "gs" '(magit-stage :which-key "Stage")
 
     "p" '(:ignore t :which-key "Project")
-    "pp" '(projectile-switch-project :which-key "Switch")
-    "pf" '(projectile-find-file :which-key "Open File")
-    "pk" '(projectile-kill-buffers :which-key "Kill project buffers")
-    "pr" '(projectile-ripgrep :which-key "Grep")
+    "pp" '(project-switch-project :which-key "Switch")
+    "pf" '(project-find-file :which-key "Open File")
+    "pk" '(project-kill-buffers :which-key "Kill project buffers")
+    "pr" '(deadgrep :which-key "Grep")
 
     "c" '(:ignore t :which-key "Code")
     "cc" '(comment-or-uncomment-region :which-key "Comment")
-    "cd" '(lsp-find-definition :which-key "Find definition")
-    "cr" '(lsp-find-references :which-key "Find references")
+    "cd" '(xref-find-definitions :which-key "Find definition")
+    "cr" '(xref-find-references :which-key "Find references")
     "ci" '(evil-indent-line :which-key "Indent")
     "c." '(completion-at-point :which-key "Complete")
 
@@ -245,11 +227,6 @@
 (use-package eshell
   :config
   (add-to-list 'eshell-modules-list 'eshell-tramp))
-
-;; Flycheck
-(use-package flycheck
-  :config
-  (setq flycheck-checkers '()))
 
 ;; MAGIT!
 (use-package magit)
@@ -296,10 +273,6 @@
    ("\\.html\\'" . web-mode)
    ("\\.vue\\'" . web-mode)
    ("\\.json\\'" . web-mode))
-  :hook
-  (web-mode . (lambda ()
-                (add-to-list 'projectile-project-root-files "package.json")
-                (add-to-list 'projectile-ignored-directories "node_modules")))
   :config
   (setq
    web-mode-markup-indent-offset 2
@@ -319,6 +292,9 @@
 ;; Rust
 (use-package rust-mode)
 
+;; Restclient
+(use-package restclient)
+
 ;; Docker/K8s
 (use-package docker-tramp
   :config
@@ -329,100 +305,13 @@
   (setq kubernetes-tramp-kubectl-executable "flatpak-spawn --host ~/.local/bin/kubectl"))
 
 ;; Language server
-(use-package lsp-mode
-  :hook
-  ((web-mode . lsp)
-   (yaml-mode . lsp)
-   (python-mode . lsp))
+(use-package eglot
+  :straight (eglot :type git :host github :repo "spearalot/eglot" :branch "feature/withhold-proc-id")
+  :init (defconst eglot-command '("/usr/bin/flatpak-spawn" "--host" "docker" "exec" "-i" "dev-image"))
   :config
-  ;; LSP Performence?
-  ;; (setq gc-cons-threshold 100000000
-  ;;       read-process-output-max (* 1024 1024))
-  (setq lsp-keymap-prefix nil
+  (setq
+   eglot-withhold-process-id t
+   eglot-autoreconnect nil
+   eglot-server-programs `((python-mode . ,(append eglot-command '("pylsp")))
+                           (web-mode    . ,(append eglot-command '("typescript-language-server" "--stdio"))))))
 
-        lsp-lens-enable nil
-
-        lsp-headerline-breadcrumb-enable nil
-        lsp-modeline-code-actions-enable nil
-        
-        lsp-enable-folding nil
-        lsp-enable-text-document-color nil
-        lsp-enable-on-type-formatting nil
-
-        lsp-signature-auto-activate t
-        lsp-signature-doc-lines 1)
-  ;; Set reasonable deps for flatpak docker
-  (progn
-    (require 'lsp-pylsp)
-    (require 'lsp-html)
-    (require 'lsp-yaml)
-    (require 'lsp-rust)
-    (require 'lsp-javascript)
-    (lsp-dependency 'html (list :system flatpak-command))
-    (lsp-dependency 'python (list :system flatpak-command))
-    (lsp-dependency 'yaml-language-server (list :system flatpak-command))
-    (lsp-dependency 'typescript (list :system flatpak-command))
-    (lsp-dependency 'typescript-language-server (list :system flatpak-command)))
-  :commands lsp)
-
-;; Keep the junk away
-(use-package lsp-docker
-  :ensure t
-  :straight (lsp-docker :type git :host github :repo "spearalot/lsp-docker")
-  :after lsp-mode
-  :config
-  (setq lsp-docker-command "flatpak-spawn --host docker")
-
-  (defvar lsp-docker-client-packages '(lsp-pylsp lsp-html lsp-yaml lsp-rust lsp-javascript))
-  (defvar lsp-docker-client-configs
-   (list
-   (list :server-id 'rls :docker-server-id 'rls-docker :server-command "rls")
-   (list :server-id 'ts-ls :docker-server-id 'tsls-docker :server-command "typescript-language-server --stdio")
-   (list :server-id 'html-ls :docker-server-id 'htmls-docker :server-command "typescript-language-server --stdio")
-   (list :server-id 'pylsp :docker-server-id 'pylsp-docker :server-command "pylsp")
-   (list :server-id 'yamlls :docker-server-id 'yamlls-docker :server-command "yaml-language-server --stdio")))
-
-  (lsp-docker-init-clients
-   :docker-image-id "dev-image"
-   :client-packages lsp-docker-client-packages
-   :client-configs lsp-docker-client-configs
-   :path-mappings '(("/home/spearalot/Dev" . "/projects"))))
-
-(use-package lsp-ui
-  :after lsp-mode
-  :config
-  (setq lsp-ui-doc-enable nil
-        lsp-ui-sideline-enable nil
-        lsp-ui-sideline-code-actions-prefix nil)
-  :commands lsp-ui-mode)
-
-;(use-package company-lsp
-;  :after lsp-mode
-;  :commands company-lsp)
-
-;; (use-package dap-mode
-;;   :ensure t
-;;   :straight (dap-mode :type git :host github :repo "matt-continuousdelta/dap-mode")
-;;   :after lsp-mode
-;;   :config
-;;   (dap-mode 1)
-;;   (dap-ui-mode 1)
-;;   (setq dap-print-io t)
-;;   (require 'dap-python)
-;;   (setq dap-python-debugger 'debugpy)
-;;   (setq dap-python-executable "~/.emacs.d/bin/dap-python")
-;;   (dap-register-debug-template "Python :: Attach"
-;;                                (list :type "python"
-;;                                      :request "attach"
-;;                                      :connect (list
-;;                                                :host "localhost"
-;;                                                :port 5678)
-;;                                      :name "Python :: Attach"))
-;;   (dap-register-debug-template "Debugger"
-;;                                (list :type "python"
-;;                                      :args "-i"
-;;                                      :cwd nil
-;;                                      :env '(("DEBUG" . "1"))
-;;                                      :target-module (expand-file-name "~/Dev/test/main.py")
-;;                                      :request "launch"
-;;                                      :name "Debugger")))

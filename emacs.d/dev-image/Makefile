@@ -1,2 +1,2 @@
 all:
-	docker build --no-cache -t dev-image .
+	docker build --build-arg USER=$(USER) -t dev-image .

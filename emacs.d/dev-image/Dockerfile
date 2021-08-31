@@ -22,10 +22,13 @@ RUN cd /tmp/otp_src_24.0 && ./configure --prefix=/usr && make && make install \
     && cd /
 
 # User environment
-RUN useradd -m -u 1001 -g users dev
-USER dev
-RUN cd /home/dev && mkdir .config && mkdir -p .local/bin && mkdir .cargo/bin
-ENV PATH="/home/dev/.local/bin:/home/dev/.cargo/bin:${PATH}" PS1='[DEV]\w\$ '
+ARG USER
+RUN useradd -m -u 1001 -g users ${USER}
+USER ${USER}
+ENV HOME /home/${USER}
+
+RUN cd ${HOME} && mkdir .config && mkdir -p .local/bin && mkdir -p .cargo/bin
+ENV PATH="${HOME}/.local/bin:${HOME}/.cargo/bin:${PATH}" PS1='[DEV]\w\$ '
 
 # Python
 COPY ./pycodestyle /home/dev/.config/pycodestyle
@@ -37,4 +40,4 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup \
     && sh /tmp/rustup -y \
     && rustup component add rls rust-analysis rust-src
 
-WORKDIR /home/dev
+WORKDIR ${HOME}
