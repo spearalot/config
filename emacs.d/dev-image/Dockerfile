@@ -22,8 +22,11 @@ RUN cd /tmp/otp_src_24.0 && ./configure --prefix=/usr && make && make install \
     && cd /
 
 # User environment
+ARG ID
+ARG GID
 ARG USER
-RUN useradd -m -u 1001 -g users ${USER}
+RUN groupadd -f -g ${GID} devuser
+RUN useradd -m -u ${ID} -g devuser ${USER}
 USER ${USER}
 ENV HOME /home/${USER}
 
