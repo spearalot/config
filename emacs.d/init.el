@@ -18,7 +18,12 @@
       frame-resize-pixelwise t
       window-resize-pixelwise nil
 
-      tab-always-indent 'complete)
+      tab-always-indent 'complete
+
+      custom-file (expand-file-name "custom.el" user-emacs-directory))
+
+;; Custom crap
+(load custom-file)
 
 (setq-default indent-tabs-mode nil)
 
@@ -34,8 +39,26 @@
 
 ;; Why is ~/.emacs.d/site-lisp not added to the default load-path
 (add-to-list 'load-path (expand-file-name "site-lisp" user-emacs-directory))
+
 (load (expand-file-name "private.el" user-emacs-directory) t)
+(require 'private)
+
 (load (expand-file-name "extensions.el" user-emacs-directory) t)
+(require 'extensions)
+
+;; Org-mode
+(require 'org)
+(require 'org-capture)
+(setq org-log-done t
+      org-directory (expand-file-name "~/Documents/Org")
+      org-agenda-files (mapcar (lambda (f) (expand-file-name f org-directory))
+                               (list "todos.org" "meetings.org"))
+      org-capture-templates '(("t" "Insert todo" entry
+                               (file+headline "todos.org" "Todo List")
+                               "** TODO %?\nDEADLINE: %^t" :empty-lines 2)
+                              ("m" "Insert meeting" entry
+                               (file+headline "meetings.org" "Meetings")
+                               "** Meeting %^{With whom}%?\nSCHEDULED: %^t" :empty-lines 2)))
 
 ;; flatpak override commands
 (defconst flatpak-command "/usr/bin/flatpak-spawn")
@@ -44,6 +67,8 @@
 ;; to manage and define packages and versions in the init file
 ;; without integrating without 'package.el'
 (load (expand-file-name "straight.el" user-emacs-directory))
+(require 'straight)
+
 
 ;; Setup use-package
 (straight-use-package 'use-package)
@@ -221,6 +246,12 @@
     "ds" '(dap-step-in :which-key "Step in")
     "do" '(dap-step-out :which-key "Step out")
     "dc" '(dap-continue :which-key "Continue")
+
+    "o" '(:ignore t :which-key "Org")
+    "oa" '(org-agenda :witch-key "Agenda")
+    "os" '(:ignore t :which-key "Sync")
+    "osd" '(org-sync-download t :which-key "Download")
+    "osu" '(org-sync-upload t :which-key "Upload")
 
     "m" '(list-bookmarks :which-key "Bookmark")))
 
