@@ -1,0 +1,47 @@
+# The following lines were added by compinstall
+zstyle :compinstall filename '~/.zshrc'
+
+autoload -Uz compinit
+compinit
+# End of lines added by compinstall
+
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.cache/zsh/histfile
+HISTSIZE=1000
+SAVEHIST=1000
+unsetopt beep
+bindkey -v
+# End of lines configured by zsh-newuser-install
+
+# Faster response for VI-mode.
+export KEYTIMEOUT=1
+
+autoload -Uz colors; colors
+autoload -Uz promptinit; promptinit
+autoload -Uz url-quote-magic
+
+# ZLE options
+zle -N self-insert url-quote-magic
+
+# Prompt
+prompt_simple_setup() {
+  if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+    PS1="%F{red}[%m]%F{default}%~/> "
+  else
+    PS1="%~/> "
+  fi
+}
+prompt_themes+=( simple )
+prompt simple
+
+# Fix for TRAMP
+[ $TERM = "dumb" ] && unsetopt zle && PS1='$ '
+
+# Aliases
+alias xnoblank='xset s off -dpms'
+
+# Modules
+source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+source ~/.config/zsh/stena.zsh 
